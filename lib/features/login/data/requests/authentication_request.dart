@@ -15,16 +15,19 @@ class AuthenticationRequest {
         "role": "user",
       });
       return LoginResponse(
-        message: response.data['data']['message'],
-        statusCode: response.statusCode,
-        isLoading: false,
-      );
+          message: response.data['data']['message'],
+          statusCode: response.statusCode,
+          isLoading: false,
+          showDialog: true);
     } on DioException catch (e) {
+      final error = e.response?.data as Map<String, dynamic>;
       return LoginResponse(
-        message: e.response?.data['errors'][0]['message'],
-        statusCode: e.response?.statusCode,
-        isLoading: false,
-      );
+          message: error.containsKey("error")
+              ? e.response?.data['error']['message']
+              : e.response?.data['errors'][0]['message'],
+          statusCode: e.response?.statusCode,
+          isLoading: false,
+          showDialog: true);
     }
   }
 }

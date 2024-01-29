@@ -7,13 +7,41 @@ import 'package:login_with_riverpod/features/login/domain/usecase/login_usecase.
 class LoginProvider extends StateNotifier<LoginResponse> {
   LoginProvider() : super(LoginResponse(isLoading: false));
   final loginUseCase = LoginUseCase(AuthenticationRepositoryImpl());
-
+  bool get hasNumError => state.hasNumberError;
   Future<void> login(
-      {required String number,
-      required String password,
+      {required LoginDetails loginDetails,
       required BuildContext context}) async {
-    state = LoginResponse(isLoading: true);
-    state = await loginUseCase.execute(number: number, password: password);
+    if (loginDetails.number != "" && loginDetails.password != "") {
+      state = LoginResponse(isLoading: true);
+      state = await loginUseCase.execute(
+        number: loginDetails.number,
+        password: loginDetails.password,
+      );
+    } else {
+      state = state.addNumberErrorMsg(loginDetails.number == ""
+          ? "Field required!!"
+          : loginDetails.number.length < 10
+              ? "Invalid Number!!"
+              : null);
+      state = state.addPasswordErrorMsg(
+          loginDetails.password == "" ? "Field required!!" : null);
+    }
+  }
+
+  void onChangedNumber(String value) {
+    if (state.numberErrorMsg != null) {
+      state = state.addNumberErrorMsg(null);
+    }
+  }
+
+  void onChangedPassword(String value) {
+    if (state.passwordErrorMsg != null) {
+      state = state.addNumberErrorMsg(null);
+    }
+  }
+
+  void reset() {
+    state = LoginResponse(isLoading: false);
   }
 }
 
